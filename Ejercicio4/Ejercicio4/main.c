@@ -22,6 +22,8 @@ struct my_msg{
     int value;
 };
 
+int calculaFact(int);
+
 int main(int argc, const char * argv[]) {
     
     pid_t hijo;
@@ -62,7 +64,7 @@ int main(int argc, const char * argv[]) {
                 perror("msgrcv: msgrcv failed\n");
                 exit(1);
             }
-            printf("You wrote: %d\n", sometext.value);
+            printf("El factorial es: %d\n", calculaFact(sometext.value));
             if(sometext.value == 0){
                 printf("message ends.\n");
                 /*delete the message queue */
@@ -83,7 +85,8 @@ int main(int argc, const char * argv[]) {
         {
             int buffer;
             /*read user input from the keyboard */
-            printf("Please ener some text:\n");
+            sleep(1);
+            printf("Dame un numero:\n");
             //fgets(buffer, BUFSIZ, stdin);
             scanf("%d", &buffer);
             //printf("Introdujiste: %s\n", buffer);
@@ -109,3 +112,13 @@ int main(int argc, const char * argv[]) {
     
     return 0;
 }
+
+int calculaFact(int num)
+{
+    int c = 0, factorial = 1;
+    for (c = 1; c <= num; c++)
+        factorial = factorial * c;
+    
+    return factorial;
+}
+
