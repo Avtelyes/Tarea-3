@@ -14,30 +14,30 @@
 #include <sys/sem.h>
 #include <errno.h>
 
-int factorial(int);
+int calculaFact(int);
 
 int main(void)
 {
     union semun {
-        int val;                  /* value for SETVAL */
-        struct semid_ds *buf;     /* buffer for IPC_STAT, IPC_SET */
-        unsigned short *array;    /* array for GETALL, SETALL */
+        int val;                  /* valor para SETVAL */
+        struct semid_ds *buf;     /* buffer para IPC_STAT, IPC_SET */
+        unsigned short *array;    /* arreglo para for GETALL, SETALL */
         /* Linux specific part: */
-        struct seminfo *__buf;    /* buffer for IPC_INFO */
+        struct seminfo *__buf;    /* buffer para IPC_INFO */
     };
     
     int pid;
-    int semid; /* semid of semaphore set */
-    key_t key = 474; /* key to pass to semget() */
-    int semflg = IPC_CREAT | 0666; /* semflg to pass to semget() */
-    int nsems = 1; /* nsems to pass to semget() */
+    int semid; /* id del semaforo */
+    key_t key = 474; /* llave para semget() */
+    int semflg = IPC_CREAT | 0666; /* semflg para semget() */
+    int nsems = 1; /* nsems para semget() */
     int rc = 0;
     int i, j;
     union semun sem_union;
     sem_union.val = 1;
     
     
-    // Initiate mutex semaphore
+    // Inicializacion del semaforo
     if ((semid = semget(key, 2, semflg)) == -1)
     {
         perror("semget: semget failed");
@@ -60,7 +60,7 @@ int main(void)
         exit(1);
     }
     
-    // Start Reader/Writer
+    // Estados Reader/Writer
     if (pid == 0)
     {
         printf("%d",semctl(semid, nsems, GETVAL, sem_union));
@@ -71,7 +71,7 @@ int main(void)
                 int n;
                 //sleep(2);
                 n = semctl(semid,nsems,GETVAL,sem_union);
-                printf("El factorial de %d es: %d\n",n,factorial(n));
+                printf("El factorial de %d es: %d\n",n,calculaFact(n));
                 sem_union.val = 0;
                 semctl(semid,0,SETVAL,sem_union);
             }
@@ -95,14 +95,11 @@ int main(void)
     }
 }
 
-
-int factorial(int n){
+int calculaFact(int num)
+{
+    int c = 0, factorial = 1;
+    for (c = 1; c <= num; c++)
+        factorial = factorial * c;
     
-    int res = 1;
-    int i ;
-    for (i=1;i<=n;i++){
-        res *= i;
-    }
-    return res;
-    
+    return factorial;
 }

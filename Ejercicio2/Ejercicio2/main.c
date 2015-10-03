@@ -86,16 +86,12 @@ int main(int argc, const char * argv[]) {
                 *buffer = 0;
         }
         
-        /* The daemon executes until press some character */
-        /*char c;
-         c = getchar();*/
         exit(0);
         
     }
     else
     {
         //wait(NULL);
-        /* Write the values of shared memory */
         while(1)
         {
             if(*buffer == 99 )
@@ -116,7 +112,7 @@ int main(int argc, const char * argv[]) {
         //printf("%d",buffer[0]);
         
         
-        /* Free the shared memory */
+        /* Liberacion de la memoria compartida */
         shmdt ((char *)buffer);
         shmctl (id_zone, IPC_RMID, (struct shmid_ds *)NULL);
         exit(0);

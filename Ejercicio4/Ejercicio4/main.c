@@ -16,7 +16,7 @@
 #include <string.h>
 #define MAX_TEXT 5
 
-/*define a message structure*/
+/*DEfinicion de una estructura para el mensaje*/
 struct my_msg{
     long msgtype;
     int value;
@@ -30,20 +30,19 @@ int main(int argc, const char * argv[]) {
     
     hijo = fork();
     
-    /*key to be passed to msgget()*/
+    /*Llave para msgget()*/
     key_t key;
-    /*msgflg to be passed to msgget()*/
+    /*msgflg para msgget()*/
     int msgflg;
-    /*return value from msgget()*/
+    /*id de msgget()*/
     int msgid;
-    /*declare an instance of structure of msg*/
+    /*instancia de la estructura*/
     struct my_msg sometext;
-    /*initialize the key*/
+    /*Inicializacion de la llave*/
     key = 1234;
-    /* read and write permission for owner,
-     and create a message queue if not exists*/
+    
     msgflg = 0666 | IPC_CREAT;
-    /*creat a message queue */
+    /*Creacion de la cola */
     if((msgid = msgget(key, msgflg))== 1){
         perror("msgget: msgget failed");
         exit(1);
@@ -72,7 +71,7 @@ int main(int argc, const char * argv[]) {
                     perror("msgctl: msgctl failed");
                     exit(1);
                 }
-                printf("program succeeded\n");
+                printf("Programa terminado\n");
                 break;
             }
         }
@@ -84,18 +83,16 @@ int main(int argc, const char * argv[]) {
         while(1)
         {
             int buffer;
-            /*read user input from the keyboard */
             sleep(1);
             printf("Dame un numero:\n");
             //fgets(buffer, BUFSIZ, stdin);
             scanf("%d", &buffer);
-            //printf("Introdujiste: %s\n", buffer);
-            /*set the msgtype */
+            /*Tipo de mensaje */
             sometext.msgtype = 1;
-            /*copy from buffer to message*/
+            /*Copiar del buffer*/
             //strcpy(sometext.message, buffer);
             sometext.value = buffer;
-            /*send the message */
+            /*Envio del mensaje */
             if (msgsnd(msgid, &sometext, MAX_TEXT, 0) == -1){
                 perror("msgsnd: msgsnd failed\n");
                 exit(1);

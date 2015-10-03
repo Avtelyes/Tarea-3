@@ -6,53 +6,100 @@
 //  Copyright © 2015 Avtelyes. All rights reserved.
 //
 
-#include <sys/types.h>
 #include <stdio.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
 #include <stdlib.h>
-#include <pwd.h>
-#include <fcntl.h>
-#include <limits.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
-int main (){
+void readFile();
+
+int main(int argc, char **argv) {
     
-    union semun  {
-        int val;
-        struct semid_ds *buf;
-        ushort *array;
-    } arg;
+    char *arg_values = NULL;
+    int c = 0;
+    pid_t hijo, sid;
     
-    int sem_id;
-    int semnum = 0;
-    
-    sem_id =  semget(65123,2, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    
-    if (sem_id == -1){
-        perror("semget: semget failed");
-        exit(1);
+    while ((c = getopt(argc, argv, "m:")) != -1) {
+        switch (c) {
+            case 'm':
+                arg_values = optarg;
+                break;
+            case '?':
+                return 1;
+            default:
+                abort();
+        }
     }
     
-    printf("Semaphore sucesfully created with id: %d\n",sem_id);
+    int min = atoi(arg_values);
     
-    while (1) {
-        
-        printf("Numero a calcular el factorial: ");
-        scanf("%d",&arg.val);
-        semctl(sem_id,0,SETVAL,arg);
-        if (arg.val == -1)
-            break;
-        arg.val = 1;
-        semctl(sem_id,1,SETVAL,arg);
-        
-        
+    
+    hijo = fork();
+    if (hijo < 0) {
+        exit(EXIT_FAILURE);
+    }
+    if (hijo > 0) {
+        exit(EXIT_SUCCESS);
+    }
+    umask(0);
+    
+    sid = setsid();
+    if (sid < 0) {
+        exit(EXIT_FAILURE);
+    }
+    if ((chdir("/")) < 0) {
+       	exit(EXIT_FAILURE);
     }
     
-    semctl(sem_id, 0, IPC_RMID, arg);
+    while (1){
+        readFile();
+        printf("\n");
+        sleep(60*min);
+    }
+    
+    //exit(0);
     
     return 0;
+}
+
+void readFile(){
+    struct dirent *dir;
+    DIR *pDir;
+    
+    pDir = opendir ("/proc");
+    if (pDir == NULL) {
+        printf ("Cannot open directory '%s'\n","/proc");
+        return;
+    }
+    
+    printf ("PID    NAME      STATUS\n");
+    while ((dir = readdir(pDir)) != NULL) {
+        if (atoi(dir->d_name) != 0) {
+            char *path = (char *)malloc(100*sizeof(char));
+            strcpy(path,"/proc/");
+            strcat(path,dir->d_name);
+            strcat(path,"/status");
+            FILE *fr;
+            fr = fopen (path,"r");
+            char *info = (char*)malloc(100*sizeof(char));
+            fgets(info,100,fr);
+            size_t length = strlen(info);
+            if (*(info+length-1) == '\n')
+                *(info+length-1) = '\0';
+            char *info2 = (char*)malloc(100*sizeof(char));
+            fgets(info2,100,fr);
+            printf("%d    %s     %s",atoi(dir->d_name),info+5,info2+7);
+            
+            free(info);
+            free(info2);
+            free(path);
+            fclose(fr);
+        }
+    }
+    
+    closedir (pDir);
 }
